@@ -1,0 +1,72 @@
+<html>
+<head>
+    <title>Structured D3</title>
+</head>
+<style>
+/* a little bit of CSS to make the chart readable */
+      #chartTitle {
+        font-family: "Verdana", Sans-serif;
+        font-weight: bold;
+        font-size: 0.875em;
+      }
+      #axisLabel {
+        font-family: sans-serif;
+        font-weight: bold;
+        font-size: 0.75em;
+      }
+.axis path
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+</style>
+
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="chart.js"></script>
+<!-- here's the div our chart will be injected into -->
+<div class="chart-container" width="350" height="400" margin="65px 65px 65px 65px"></div>
+
+<!-- these will be made useful in the script below -->
+<button class="color" data-color="red">red data</button>
+<button class="color" data-color="green">green data</button>
+<button class="color" data-color="blue">blue data</button>
+<button class="data">change data</button>
+
+<script>
+// create new chart using Chart constructor
+var chart = new Chart({
+	element: document.querySelector('.chart-container'),
+    data: [{x:'A',y:2.5},{x:'A',y:18},{x:'A',y:30},{x:'C',y:40},{x:'C',y:12},{x:'C',y:12}]
+});
+
+// change line colour on click
+d3.selectAll('button.color').on('click', function(){
+    var color = d3.select(this).text().split(' ')[0];
+    chart.setColor( color );
+});
+
+// change data on click to something randomly-generated
+d3.selectAll('button.data').on('click', function(){
+    chart.setData([{x:'A',y:Math.random()*100},{x:'A',y:Math.random()*100},{x:'A',y:Math.random()*100},{x:'C',y:Math.random()*100},{x:'C',y:Math.random()*100},{x:'D',y:Math.random()*100}]
+);
+});
+
+// redraw chart on each resize
+// in a real-world example, it might be worth ‘throttling’ this
+// more info: http://sampsonblog.com/749/simple-throttle-function
+d3.select(window).on('resize', function(){
+    chart.draw();
+});
+
+</script>
+</body>
+</html>
+
+
