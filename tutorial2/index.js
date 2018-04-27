@@ -3,7 +3,7 @@ var margin = {top: 100, right: 100, bottom: 100, left: 100},
     height = 500 - margin.top - margin.bottom;
 
 var x = d3.scale.ordinal()
-    .domain([".","A", "C"," "])
+    .domain([".", "A", "C", " "])
     .rangePoints([0, width]);
 
 var xAxis = d3.svg.axis()
@@ -13,7 +13,7 @@ var xAxis = d3.svg.axis()
 var svg = d3.select('svg')
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 svg.append("g")
