@@ -39,7 +39,7 @@ Chart.prototype.draw = function () {
         .attr('width', +this.svg.attr("width") - (this.margin.left + this.margin.right))
         .attr('height', +this.svg.attr("height") - (this.margin.top + this.margin.bottom));
 
-    // create the other stuff
+    // create the other stuff, careful about 'fill' or mouse events won't be picked up
     this.createBox();
     this.createScales();
     this.addAxes(AxisLine.X.NotVisible, AxisLine.Y.NotVisible, Grid.X.Visible, Grid.Y.NotVisible);
@@ -52,12 +52,13 @@ Chart.prototype.draw = function () {
 
 Chart.prototype.createBox = function () {
     // enclosing box
-    var rect = this.svg.append("rect")
+    this.svg.append("rect")
         .attr("x", 0)
         .attr("y", 0)
         .attr("width", +this.svg.attr("width"))
         .attr("height", +this.svg.attr("height"))
-        .attr("style", "stroke:gray;stroke-width:1;fill-opacity:0;stroke-opacity:0.5");
+        .attr("style", "stroke:gray;stroke-width:1;fill-opacity:0;stroke-opacity:0.5")
+        .attr("fill", 'none')
 }
 
 Chart.prototype.createScales = function () {
@@ -77,7 +78,7 @@ Chart.prototype.createScales = function () {
         .domain(yExtent);
 }
 
-Chart.prototype.addAxes = function (showXLine=true, showYLine=true, showHorizontalGrid=true, showVerticalGrid=false) {
+Chart.prototype.addAxes = function (showXLine = true, showYLine = true, showHorizontalGrid = true, showVerticalGrid = false) {
     // create and append axis
     var xAxis = d3.axisBottom(this.xScale);
     var xAxisElement = this.plot.append("g")
@@ -128,10 +129,9 @@ Chart.prototype.addAxes = function (showXLine=true, showYLine=true, showHorizont
         .attr("y1", 0)
         .attr("x2", 0)
         .attr("y2", +this.plot.attr("height"))
-        .attr("stroke-width", 3)
+        .attr("stroke-width", 15)
         .attr("stroke", "white");
 }
-
 
 Chart.prototype.addChartTitle = function (title) {
     var yOffset = 2 * this.margin.top / 3;
@@ -172,6 +172,40 @@ Chart.prototype.addYAxisLabel = function (label) {
 }
 
 Chart.prototype.addPlot = function () {
+    var pointRadius = 3;
+
+    // need to load `this` into `_this`...
+    var _this = this;
+
+    this.plot.selectAll(".cir")
+        .data(this.data.filter(d => d.symbol == 0))
+        .enter()
+        .append("circle")
+        .attr("class", "cir")
+        .attr("cx", function (d) {
+            return _this.xScale(d.x);
+        })
+        .attr("cy", function (d) {
+            return _this.yScale(d.y);
+        })
+        .attr('r', pointRadius)
+        .style('fill', this.dataColor || 'red')
+        .on('click', (d) => {Chart.prototype.handleMouseClick(_this,d,pointRadius);})
+
+    ;
+
+    var triangleSize = 20;
+    this.plot.selectAll('.point')
+        .data(this.data.filter(d => d.symbol == 1))
+        .enter()
+        .append('path')
+        .attr('transform', function (d, i) {
+            return "translate(" + [+_this.xScale(d.x), +_this.yScale(d.y)] + ")";
+        })
+        .attr('d', d3.symbol().size(triangleSize).type(d3.symbolTriangle))
+        .on('click', (d) => {Chart.prototype.handleMouseClick(_this,d,pointRadius);})
+
+
     // need to load `this` into `_this`...
 //        var _this = this;
 //        var line = d3.svg.line()
@@ -190,32 +224,33 @@ Chart.prototype.addPlot = function () {
 //            // set stroke to specified color, or default to red
 //            .style('stroke', this.lineColor || 'red');
 
-    // need to load `this` into `_this`...
-    var _this = this;
-    this.plot.selectAll(".cir")
-        .data(this.data.filter(d => d.symbol == 0))
-        .enter()
-        .append("circle")
-        .attr("class", "cir")
-        .attr("cx", function (d) {
-            return _this.xScale(d.x);
-        })
-        .attr("cy", function (d) {
-            return _this.yScale(d.y);
-        })
-        .attr('r', 3)
-        .style('fill', this.dataColor || 'red');
+    // var lineData = [{"x": 0, "y": 0}, {"x": +this.svg.attr("width"), "y": 0},
+    //     {"x": +this.svg.attr("width"), "y": +this.svg.attr("height")}, {"x": 0, "y": +this.svg.attr("height")},
+    //     {"x": 0, "y": 0}];
+    // var lineFunction = d3.line()
+    //     .x(function (d) {
+    //         return d.x;
+    //     })
+    //     .y(function (d) {
+    //         return d.y;
+    //     });
+    // this.svg.append("path")
+    //     .attr("d", lineFunction(lineData))
+    //     .attr("stroke", "blue")
+    //     .attr("stroke-width", 2)
+    //     .attr("fill", 'none')
+}
 
-    var triangleSize = 20;
-    this.plot.selectAll('.symbol')
-        .data(this.data.filter(d => d.symbol == 1))
-        .enter()
-        .append('path')
-        .attr('transform', function (d, i) {
-            return "translate(" + [+_this.xScale(d.x), +_this.yScale(d.y)] + ")";
-        })
-        .attr('d', d3.symbol().size(triangleSize).type(d3.symbolTriangle));
-
+Chart.prototype.handleMouseClick = function(_this,d, pointRadius) {
+    console.log(`draw big circle around (${_this.xScale(d.x)},${_this.yScale(d.y)},${d.symbol})`);
+    _this.plot.append("circle")
+        .attr('class', 'click-circle')
+        .attr("cx", _this.xScale(d.x))
+        .attr("cy", _this.yScale(d.y))
+        .attr('r', 2 * pointRadius)
+        .style('fill', 'none')
+        .style('stroke','#33E6FF')
+        .style("stroke-width", 2)
 }
 
 Chart.prototype.addAnnotation = function () {
