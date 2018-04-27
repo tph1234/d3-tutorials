@@ -6,6 +6,7 @@
         // load in arguments from config object
         this.element = opts.element;
         this.data = opts.data;
+
         this.initLayout();
         // create the chart
         this.draw();
@@ -22,13 +23,15 @@
 
     Chart.prototype.draw = function() {
         // set up parent element and SVG
-        this.element.innerHTML = ''; // need for redraw, otherwise will create more than one svg
+        // need for redraw. empty out all g children, otherwise will create more than one svg
+        this.element.innerHTML = '';
 
+		// new svg element
         this.svg = d3.select(this.element).append('svg')
         	.attr('width',  this.width)
         	.attr('height', this.height);
 
-        // we'll actually be appending to a <g> element
+        // append plot to a <g> element
         this.plot = this.svg.append('g')
             .attr("transform", "translate("+ [this.margin.left, this.margin.top] + ")")
             .attr('width', +this.svg.attr("width") - (this.margin.left + this.margin.right))
@@ -42,7 +45,7 @@
         this.addXAxisLabel('Analytes');
         this.addYAxisLabel('Peak Height');
         this.addPlot();
-
+        this.addAnnotation();
     }
 
 	Chart.prototype.createBox = function(){
@@ -186,13 +189,33 @@
         // need to load `this` into `_this`...
         var _this = this;
         this.plot.selectAll(".cir")
-                      .data(this.data)
-                      .enter().append("circle")
+                      .data(this.data.filter(d => d.symbol==0))
+                      .enter()
+                      .append("circle")
                         .attr("class", "cir")
                         .attr("cx", function(d) { return _this.xScale(d.x); })
                         .attr("cy", function(d) { return _this.yScale(d.y); })
                         .attr('r', 3)
                         .style('fill', this.dataColor || 'red');
+
+    		var triangleSize= 20;
+        	this.plot.selectAll('.symbol')
+           .data(this.data.filter(d => d.symbol==1))
+           .enter()
+           .append('path')
+           .attr('transform',function(d,i) { return "translate("+[+_this.xScale(d.x), +_this.yScale(d.y)]+")";})
+           .attr('d', d3.symbol().size(triangleSize).type( d3.symbolTriangle ) );
+
+    }
+
+    Chart.prototype.addAnnotation = function() {
+    	var dataY= 2;
+    	this.plot.append("line")
+        .attr("x1", 0)
+        .attr("x2",+this.plot.attr("width"))
+        .attr("y1", this.yScale(dataY))
+        .attr("y2", this.yScale(dataY))
+        .attr("stroke", "orange");
     }
 
     // the following are "public methods"

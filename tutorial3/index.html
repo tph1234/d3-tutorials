@@ -43,7 +43,7 @@
 // create new chart using Chart constructor
 var chart = new Chart({
 	element: document.querySelector('.chart-container'),
-    data: [{x:'A',y:2.5},{x:'A',y:18},{x:'A',y:30},{x:'C',y:40},{x:'C',y:12},{x:'C',y:12}]
+    data: [{x:'A',y:2.5,symbol:0},{x:'A',y:18},{x:'A',y:30,symbol:1},{x:'C',y:40,symbol:1},{x:'C',y:12,symbol:1},{x:'C',y:12,symbol:0}]
 });
 
 // change line colour on click
@@ -54,7 +54,7 @@ d3.selectAll('button.color').on('click', function(){
 
 // change data on click to something randomly-generated
 d3.selectAll('button.data').on('click', function(){
-    chart.setData([{x:'A',y:Math.random()*100},{x:'A',y:Math.random()*100},{x:'A',y:Math.random()*100},{x:'C',y:Math.random()*100},{x:'C',y:Math.random()*100},{x:'D',y:Math.random()*100}]
+    chart.setData([{x:'A',y:Math.random()*100,symbol:Math.round(Math.random())},{x:'A',y:Math.random()*100,symbol:Math.round(Math.random())},{x:'A',y:Math.random()*100,symbol:Math.round(Math.random())},{x:'C',y:Math.random()*100,symbol:Math.round(Math.random())},{x:'C',y:Math.random()*100,symbol:Math.round(Math.random())},{x:'D',y:Math.random()*100,symbol:Math.round(Math.random())}]
 );
 });
 
