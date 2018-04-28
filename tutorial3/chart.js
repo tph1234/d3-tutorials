@@ -1,5 +1,9 @@
-var Grid = Object.freeze({X: {"NotVisible": false, "Visible": true}, Y: {"NotVisible": false, "Visible": true}});
-var AxisLine = Object.freeze({X: {"NotVisible": false, "Visible": true}, Y: {"NotVisible": false, "Visible": true}});
+const Grid = Object.freeze({X: {"NotVisible": false, "Visible": true}, Y: {"NotVisible": false, "Visible": true}});
+const AxisLine = Object.freeze({X: {"NotVisible": false, "Visible": true}, Y: {"NotVisible": false, "Visible": true}});
+const pointRadius = 3;
+const pointTriangleSize = 20;
+const pointColor = '#D733FF';
+const selectedPointColor = '#33E6FF';
 
 var Chart = function (opts) {
     this.version = '5.x'
@@ -16,7 +20,7 @@ Chart.prototype.initLayout = function () {
     // define width, height and margin of svg area
     this.width = +this.element.attributes.width.nodeValue;
     this.height = +this.element.attributes.height.nodeValue;
-    var m = this.element.attributes.margin.value.split(' ');
+    const m = this.element.attributes.margin.value.split(' ');
     this.margin = {
         top: +m[0].match(/(\d+)(px)?/)[1], right: +m[1].match(/(\d+)(px)?/)[1],
         bottom: +m[2].match(/(\d+)(px)?/)[1], left: +m[3].match(/(\d+)(px)?/)[1]
@@ -42,12 +46,14 @@ Chart.prototype.draw = function () {
     // create the other stuff, careful about 'fill' or mouse events won't be picked up
     this.createBox();
     this.createScales();
-    this.addAxes(AxisLine.X.NotVisible, AxisLine.Y.NotVisible, Grid.X.Visible, Grid.Y.NotVisible);
+    this.addAxes(AxisLine.X.NotVisible, AxisLine.Y.NotVisible, Grid.X.Visible, Grid.Y.Visible);
     this.addChartTitle('BRAF_V600R_PlxC');
     this.addXAxisLabel('Analytes');
     this.addYAxisLabel('Peak Height');
-    this.addPlot();
     this.addAnnotation();
+
+    //this.addPlot();
+    this.addSwarmPlot();
 }
 
 Chart.prototype.createBox = function () {
@@ -63,14 +69,11 @@ Chart.prototype.createBox = function () {
 
 Chart.prototype.createScales = function () {
     // calculate max and min for data
-    var xExtent = this.data.map(function (d) {
-        return d.x;
-    });
-    var yExtent = [0, d3.max(this.data, function (d) {
-        return d.y;
-    })];
+    const xExtent = this.data.map((d) => d.x);
+    const yExtent = [0, d3.max(this.data, (d) => d.y)];
 
-    this.xScale = d3.scalePoint().range([0, +this.plot.attr("width")]).padding(1)
+    this.xScale = d3.scalePoint()
+        .range([0, +this.plot.attr("width")]).padding(1)
         .domain(xExtent);
 
     this.yScale = d3.scaleLinear()
@@ -80,20 +83,20 @@ Chart.prototype.createScales = function () {
 
 Chart.prototype.addAxes = function (showXLine = true, showYLine = true, showHorizontalGrid = true, showVerticalGrid = false) {
     // create and append axis
-    var xAxis = d3.axisBottom(this.xScale);
-    var xAxisElement = this.plot.append("g")
+    const xAxis = d3.axisBottom(this.xScale);
+    const xAxisElement = this.plot.append("g")
         .attr("class", "axis")
         .attr("transform", "translate(0," + (+this.plot.attr("height")) + ")")
         .call(xAxis);
 
-    var yAxis = d3.axisLeft(this.yScale)
-    var yAxisElement = this.plot.append("g")
+    const yAxis = d3.axisLeft(this.yScale)
+    const yAxisElement = this.plot.append("g")
         .attr("class", "axis")
         .call(yAxis)
 
     // show vertical Y grid lines
     if (showVerticalGrid) {
-        var verticalGrid = d3.axisTop(this.xScale)
+        const verticalGrid = d3.axisTop(this.xScale)
             .tickSize(this.plot.attr("height"))
             .tickSizeOuter(0)
             .tickFormat('');
@@ -104,7 +107,7 @@ Chart.prototype.addAxes = function (showXLine = true, showYLine = true, showHori
 
     // show horizontal X grid lines
     if (showHorizontalGrid) {
-        var horizontalGrid = d3.axisRight(this.yScale)
+        const horizontalGrid = d3.axisRight(this.yScale)
             .tickSize(this.plot.attr("width"))
             .tickSizeOuter(0)
             .tickFormat('');
@@ -134,7 +137,7 @@ Chart.prototype.addAxes = function (showXLine = true, showYLine = true, showHori
 }
 
 Chart.prototype.addChartTitle = function (title) {
-    var yOffset = 2 * this.margin.top / 3;
+    const yOffset = 2 * this.margin.top / 3;
 
     this.plot.append("text")
         .attr("id", "chartTitle")
@@ -144,7 +147,7 @@ Chart.prototype.addChartTitle = function (title) {
 }
 
 Chart.prototype.addXAxisLabel = function (label) {
-    var yOffset = 2 * this.margin.bottom / 3;
+    const yOffset = 2 * this.margin.bottom / 3;
 
     this.plot.append("text")
         .attr("id", "axisLabel")
@@ -154,7 +157,7 @@ Chart.prototype.addXAxisLabel = function (label) {
 }
 
 Chart.prototype.addYAxisLabel = function (label) {
-    var xOffset = 2 * this.margin.bottom / 3;
+    const xOffset = 2 * this.margin.bottom / 3;
 
     this.plot.append("text")
         .attr("id", "axisLabel")
@@ -172,38 +175,34 @@ Chart.prototype.addYAxisLabel = function (label) {
 }
 
 Chart.prototype.addPlot = function () {
-    var pointRadius = 3;
-
     // need to load `this` into `_this`...
-    var _this = this;
+    const _this = this;
 
-    this.plot.selectAll(".cir")
+    this.plot.selectAll("point")
         .data(this.data.filter(d => d.symbol == 0))
         .enter()
-        .append("circle")
-        .attr("class", "cir")
-        .attr("cx", function (d) {
-            return _this.xScale(d.x);
-        })
-        .attr("cy", function (d) {
-            return _this.yScale(d.y);
-        })
-        .attr('r', pointRadius)
-        .style('fill', this.dataColor || 'red')
-        .on('click', (d) => {Chart.prototype.handleMouseClick(_this,d,pointRadius);})
+        .append('path')
+        .attr('class', d => `point ${d.symbol}`)
+        .attr('d', d3.symbol().size(8 * pointRadius).type(d3.symbolCircle))
+        .attr('stroke-width', 5)
+        .attr('transform', d => `translate(${this.xScale(d.x)},${d.y})`)
+        .style('fill', this.dataColor || pointColor)
+        .style('opacity', 0.7)
+        .on('click', (d) => {
+            Chart.prototype.handleMouseClick(_this, d, pointRadius);
+        });
 
-    ;
-
-    var triangleSize = 20;
-    this.plot.selectAll('.point')
+    this.plot.selectAll('point')
         .data(this.data.filter(d => d.symbol == 1))
         .enter()
         .append('path')
-        .attr('transform', function (d, i) {
+        .attr('transform', (d, i) => {
             return "translate(" + [+_this.xScale(d.x), +_this.yScale(d.y)] + ")";
         })
-        .attr('d', d3.symbol().size(triangleSize).type(d3.symbolTriangle))
-        .on('click', (d) => {Chart.prototype.handleMouseClick(_this,d,pointRadius);})
+        .attr('d', d3.symbol().size(pointTriangleSize).type(d3.symbolTriangle))
+        .on('click', (d) => {
+            Chart.prototype.handleMouseClick(_this, d, pointRadius);
+        })
 
 
     // need to load `this` into `_this`...
@@ -241,20 +240,111 @@ Chart.prototype.addPlot = function () {
     //     .attr("fill", 'none')
 }
 
-Chart.prototype.handleMouseClick = function(_this,d, pointRadius) {
+// arbitrary number of categories
+Chart.prototype.addSwarmPlot0 = function () {
+    const _this = this;
+
+    let categories = Array.from(new Set(this.data.map((d) => d.x)));
+    let swarm = categories.map((c) => d3.beeswarm()
+        .data(this.data.filter(point => point.x === c))
+        .distributeOn(d => this.yScale(d.y))
+        .radius(8)
+        .orientation('vertical')
+        .arrange()
+    );
+    var swarm1 = swarm.reduce((a1, a2) => a1.concat(a2));
+    this.plot.selectAll("point")
+        .data(swarm1)
+        .enter()
+        .append('path')
+        .attr('class', d => `point ${d.datum.symbol}`)
+        .attr('d', d3.symbol().size(pointTriangleSize).type(d3.symbolTriangle))
+        .attr('stroke-width', 5)
+        .attr('transform', d => `translate(${this.xScale(d.datum.x) + d.x},${d.y})`)
+        .on('click', (d) => {
+            Chart.prototype.handleSwarmMouseClick(_this, d, pointRadius);
+        });
+}
+
+// 2 categories only
+// https://bl.ocks.org/Kcnarf/5c989173d0e0c74ab4b62161b33bb0a8
+Chart.prototype.addSwarmPlot = function () {
+    const _this = this;
+
+    // circles
+    let swarm1 = d3.beeswarm()
+        .data(this.data.filter(point => point.symbol === 0))
+        .distributeOn(d => this.yScale(d.y))
+        .radius(1.5*pointRadius) // set the radius for overlapping detection
+        .orientation('vertical')
+        .arrange(); // launch arrangement computation;
+                     // return an array of {datum: , x: , y: }
+                    // where datum refers to an element of data
+                    // each element of data remains unchanged
+
+    this.plot.selectAll("point")
+        .data(swarm1)
+        .enter()
+        .append('path')
+        .attr('class', d => `point ${d.datum.symbol}`)
+        .attr('d', d3.symbol().size(8 * pointRadius).type(d3.symbolCircle))
+        .attr('stroke-width', 5)
+        .attr('transform', d => `translate(${this.xScale(d.datum.x) + d.x},${d.y})`)
+        .style('fill', this.dataColor || pointColor)
+        .style('opacity', 0.7)
+        .on('click', (d) => {
+            Chart.prototype.handleSwarmMouseClick(_this, d, pointRadius);
+        });
+
+    // triangles
+    let swarm2 = d3.beeswarm()
+        .data(this.data.filter(point => point.symbol === 1))
+        .distributeOn(d => this.yScale(d.y))
+        .radius(1.5*pointRadius)
+        .orientation('vertical')
+        .arrange();
+
+    this.plot.selectAll("point")
+        .data(swarm2)
+        .enter()
+        .append('path')
+        .attr('class', d => `point ${d.datum.symbol}`)
+        .attr('d', d3.symbol().size(pointTriangleSize).type(d3.symbolTriangle))
+        .attr('stroke-width', 5)
+        .attr('transform', d => `translate(${this.xScale(d.datum.x) + d.x},${d.y})`)
+        .on('click', (d) => {
+            Chart.prototype.handleSwarmMouseClick(_this, d, pointRadius);
+        });
+}
+
+Chart.prototype.handleMouseClick = function (_this, d, pointRadius) {
     console.log(`draw big circle around (${_this.xScale(d.x)},${_this.yScale(d.y)},${d.symbol})`);
+
     _this.plot.append("circle")
         .attr('class', 'click-circle')
         .attr("cx", _this.xScale(d.x))
         .attr("cy", _this.yScale(d.y))
         .attr('r', 2 * pointRadius)
         .style('fill', 'none')
-        .style('stroke','#33E6FF')
+        .style('stroke', selectedPointColor)
+        .style("stroke-width", 2)
+}
+
+Chart.prototype.handleSwarmMouseClick = function (_this, d, pointRadius) {
+    console.log(`draw big circle around (${d.datum.x}, ${_this.xScale(d.datum.x) + d.x}, ${_this.yScale(d.datum.y)}, ${d.datum.symbol})`);
+
+    _this.plot.append("circle")
+        .attr('class', 'click-circle')
+        .attr("cx", _this.xScale(d.datum.x) + d.x)
+        .attr("cy", _this.yScale(d.datum.y))
+        .attr('r', 2 * pointRadius)
+        .style('fill', 'none')
+        .style('stroke', '#33E6FF')
         .style("stroke-width", 2)
 }
 
 Chart.prototype.addAnnotation = function () {
-    var dataY = 2;
+    const dataY = 2;
     this.plot.append("line")
         .attr("x1", 0)
         .attr("x2", +this.plot.attr("width"))
@@ -273,6 +363,8 @@ Chart.prototype.setColor = function (newColor) {
 
     // store for use when redrawing
     this.dataColor = newColor;
+    // full redraw needed
+    this.draw();
 }
 
 Chart.prototype.setData = function (newData) {
