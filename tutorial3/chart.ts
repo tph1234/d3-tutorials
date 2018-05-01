@@ -272,7 +272,8 @@ Chart.prototype.addSwarmPlot = function () {
     const _me = this;
 
     // circles
-    let swarm1 = d3.beeswarm()
+    // let swarm1 = d3.beeswarm()
+    let swarm1 = d3['beeswarm']()
         .data(this.data.filter(point => point.symbol === 0))
         .distributeOn(d => this.yScale(d.y))
         .radius(1.5*pointRadius) // set the radius for overlapping detection
@@ -297,7 +298,7 @@ Chart.prototype.addSwarmPlot = function () {
         });
 
     // triangles
-    let swarm2 = d3.beeswarm()
+    let swarm2 = d3['beeswarm']()
         .data(this.data.filter(point => point.symbol === 1))
         .distributeOn(d => this.yScale(d.y))
         .radius(1.5*pointRadius)
