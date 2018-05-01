@@ -32,7 +32,13 @@
 
 <body>
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="chart.js"></script>
+<script src="https://raw.githack.com/Kcnarf/d3-beeswarm/master/build/d3-beeswarm.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<div data-ng-app="" data-ng-init="firstName='John'">
+    <p>The name is <span data-ng-bind="firstName"></span></p>
+</div>
+
+<script src="chart.ts"></script>
 <!-- here's the div our chart will be injected into -->
 <div class="chart-container" width="350" height="400" margin="65px 65px 65px 65px"></div>
 
@@ -46,11 +52,13 @@
     // create new chart using Chart constructor
     var chart = new Chart({
         element: document.querySelector('.chart-container'),
-        data: [{x: 'A', y: 2.5, symbol: 0}, {x: 'A', y: 18}, {x: 'A', y: 30, symbol: 1}, {
-            x: 'C',
-            y: 40,
-            symbol: 1
-        }, {x: 'C', y: 12, symbol: 1}, {x: 'C', y: 12, symbol: 0}]
+        // data: [{x: 'A', y: 2.5, symbol: 0}, {x: 'A', y: 18, symbol: 0}, {x: 'A', y: 30, symbol: 1}, {x: 'C',y: 40, symbol: 1}, {x: 'C', y: 12, symbol: 1}, {x: 'C', y: 12, symbol: 0}]
+        data: [{x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0}, {x: 'C',y: 12,symbol: 1}, {x: 'C', y: 12, symbol: 1}, {x: 'C', y: 12, symbol: 1}]
+        //data: [{x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0}]
+        // data: [{x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0},{x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0},
+        //     {x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0},{x: 'A', y: 3, symbol: 0}, {x: 'A', y: 3, symbol: 0},
+        //     {x: 'B', y: 3, symbol: 1}, {x: 'B', y: 3, symbol: 1},{x: 'B', y: 3, symbol: 1}, {x: 'B', y: 3, symbol: 1},
+        //     {x: 'B', y: 3, symbol: 1}, {x: 'B', y: 3, symbol: 1},{x: 'B', y: 3, symbol: 1}, {x: 'B', y: 3, symbol: 1}]
     });
 
     // change line colour on click
@@ -61,19 +69,21 @@
 
     // change data on click to something randomly-generated
     d3.selectAll('button.data').on('click', function () {
-        chart.setData([{x: 'A', y: Math.random() * 100, symbol: Math.round(Math.random())}, {
-                x: 'A',
-                y: Math.random() * 100,
-                symbol: Math.round(Math.random())
-            }, {x: 'A', y: Math.random() * 100, symbol: Math.round(Math.random())}, {
-                x: 'C',
-                y: Math.random() * 100,
-                symbol: Math.round(Math.random())
-            }, {x: 'C', y: Math.random() * 100, symbol: Math.round(Math.random())}, {
-                x: 'D',
-                y: Math.random() * 100,
-                symbol: Math.round(Math.random())
-            }]
+        chart.setData([{x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'A', y: Math.random() * 2, symbol: Math.round(Math.random())},
+            {x: 'C', y: Math.floor(Math.random() * 100)+30,symbol: Math.round(Math.random())},
+            {x: 'C', y: Math.floor(Math.random() * 100)+30, symbol: Math.round(Math.random())},
+            {x: 'C', y: Math.floor(Math.random() * 100)+30, symbol: Math.round(Math.random())},
+            {x: 'C', y: Math.floor(Math.random() * 100)+30, symbol: Math.round(Math.random())},
+            {x: 'C', y: Math.floor(Math.random() * 100)+30, symbol: Math.round(Math.random())}
+            ]
         );
     });
 
