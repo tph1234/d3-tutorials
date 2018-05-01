@@ -70,7 +70,7 @@ Chart.prototype.createBox = function () {
 Chart.prototype.createScales = function () {
     // calculate max and min for data
     const xExtent = this.data.map((d) => d.x);
-    const yExtent = [0, d3.max(this.data, (d) => +d.y)];
+    const yExtent = [0, d3.max(this.data, (d) => +d["y"])];
 
     this.xScale = d3.scalePoint()
         .range([0, +this.plot.attr("width")]).padding(1)
@@ -175,8 +175,8 @@ Chart.prototype.addYAxisLabel = function (label) {
 }
 
 Chart.prototype.addPlot = function () {
-    // need to load `this` into `_this`...
-    const _this = this;
+    // need to load `this` into `_me`...
+    const _me = this;
 
     this.plot.selectAll("point")
         .data(this.data.filter(d => d.symbol == 0))
@@ -189,7 +189,7 @@ Chart.prototype.addPlot = function () {
         .style('fill', this.dataColor || pointColor)
         .style('opacity', 0.7)
         .on('click', (d) => {
-            Chart.prototype.handleMouseClick(_this, d, pointRadius);
+            Chart.prototype.handleMouseClick(_me, d, pointRadius);
         });
 
     this.plot.selectAll('point')
@@ -197,23 +197,23 @@ Chart.prototype.addPlot = function () {
         .enter()
         .append('path')
         .attr('transform', (d, i) => {
-            return "translate(" + [+_this.xScale(d.x), +_this.yScale(d.y)] + ")";
+            return "translate(" + [+_me.xScale(d.x), +_me.yScale(d.y)] + ")";
         })
         .attr('d', d3.symbol().size(pointTriangleSize).type(d3.symbolTriangle))
         .on('click', (d) => {
-            Chart.prototype.handleMouseClick(_this, d, pointRadius);
+            Chart.prototype.handleMouseClick(_me, d, pointRadius);
         })
 
 
-    // need to load `this` into `_this`...
-//        var _this = this;
+    // need to load `this` into `_me`...
+//        var _me = this;
 //        var line = d3.svg.line()
 //            .x(function(d) {
 //                // ... so we can access it here
-//                return _this.xScale(d[0]);
+//                return _me.xScale(d[0]);
 //            })
 //            .y(function(d) {
-//                return _this.yScale(d[1]);
+//                return _me.yScale(d[1]);
 //            });
 //        this.plot.append('path')
 //            // use data stored in `this`
@@ -242,7 +242,7 @@ Chart.prototype.addPlot = function () {
 
 // arbitrary number of categories
 // Chart.prototype.addSwarmPlot0 = function () {
-//     const _this = this;
+//     const _me = this;
 //
 //     let categories = Array.from(new Set(this.data.map((d) => d.x)));
 //     let swarm = categories.map((c) => d3.beeswarm()
@@ -262,17 +262,17 @@ Chart.prototype.addPlot = function () {
 //         .attr('stroke-width', 5)
 //         .attr('transform', d => `translate(${this.xScale(d.datum.x) + d.x},${d.y})`)
 //         .on('click', (d) => {
-//             Chart.prototype.handleSwarmMouseClick(_this, d, pointRadius);
+//             Chart.prototype.handleSwarmMouseClick(_me, d, pointRadius);
 //         });
 // }
 
 // 2 categories only
 // https://bl.ocks.org/Kcnarf/5c989173d0e0c74ab4b62161b33bb0a8
 Chart.prototype.addSwarmPlot = function () {
-    const _this = this;
+    const _me = this;
 
     // circles
-    let swarm1 =  d3.beeswarm()
+    let swarm1 = d3.beeswarm()
         .data(this.data.filter(point => point.symbol === 0))
         .distributeOn(d => this.yScale(d.y))
         .radius(1.5*pointRadius) // set the radius for overlapping detection
@@ -293,7 +293,7 @@ Chart.prototype.addSwarmPlot = function () {
         .style('fill', this.dataColor || pointColor)
         .style('opacity', 0.7)
         .on('click', (d) => {
-            Chart.prototype.handleSwarmMouseClick(_this, d, pointRadius);
+            Chart.prototype.handleSwarmMouseClick(_me, d, pointRadius);
         });
 
     // triangles
@@ -313,30 +313,30 @@ Chart.prototype.addSwarmPlot = function () {
         .attr('stroke-width', 5)
         .attr('transform', d => `translate(${this.xScale(d.datum.x) + d.x},${d.y})`)
         .on('click', (d) => {
-            Chart.prototype.handleSwarmMouseClick(_this, d, pointRadius);
+            Chart.prototype.handleSwarmMouseClick(_me, d, pointRadius);
         });
 }
 
-Chart.prototype.handleMouseClick = function (_this, d, pointRadius) {
-    console.log(`draw big circle around (${_this.xScale(d.x)},${_this.yScale(d.y)},${d.symbol})`);
+Chart.prototype.handleMouseClick = function (_me, d, pointRadius) {
+    console.log(`draw big circle around (${_me.xScale(d.x)},${_me.yScale(d.y)},${d.symbol})`);
 
-    _this.plot.append("circle")
+    _me.plot.append("circle")
         .attr('class', 'click-circle')
-        .attr("cx", _this.xScale(d.x))
-        .attr("cy", _this.yScale(d.y))
+        .attr("cx", _me.xScale(d.x))
+        .attr("cy", _me.yScale(d.y))
         .attr('r', 2 * pointRadius)
         .style('fill', 'none')
         .style('stroke', selectedPointColor)
         .style("stroke-width", 2)
 }
 
-Chart.prototype.handleSwarmMouseClick = function (_this, d, pointRadius) {
-    console.log(`draw big circle around (${d.datum.x}, ${_this.xScale(d.datum.x) + d.x}, ${_this.yScale(d.datum.y)}, ${d.datum.symbol})`);
+Chart.prototype.handleSwarmMouseClick = function (_me, d, pointRadius) {
+    console.log(`draw big circle around (${d.datum.x}, ${_me.xScale(d.datum.x) + d.x}, ${_me.yScale(d.datum.y)}, ${d.datum.symbol})`);
 
-    _this.plot.append("circle")
+    _me.plot.append("circle")
         .attr('class', 'click-circle')
-        .attr("cx", _this.xScale(d.datum.x) + d.x)
-        .attr("cy", _this.yScale(d.datum.y))
+        .attr("cx", _me.xScale(d.datum.x) + d.x)
+        .attr("cy", _me.yScale(d.datum.y))
         .attr('r', 2 * pointRadius)
         .style('fill', 'none')
         .style('stroke', '#33E6FF')
